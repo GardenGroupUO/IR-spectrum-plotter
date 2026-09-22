@@ -1,0 +1,4 @@
+dist/
+.venv/
+.jupyterlite.doit.db
+__pycache__/
