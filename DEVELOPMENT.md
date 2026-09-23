@@ -1,4 +1,4 @@
-# Project notes for Claude Code
+# Development notes
 
 A JupyterLite site where chemistry students drag in a GRAMS/AI `.spc` file or a Bruker
 OPUS file and get a CSV, a plot, and a peak list. Everything runs in the browser via

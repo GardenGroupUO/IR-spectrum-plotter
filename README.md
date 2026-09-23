@@ -46,7 +46,7 @@ whatever your instrument produced.
 ## Developing or deploying this yourself
 
 This repo is the source for the site above. If you want to change it, tune the peak
-picker, or deploy your own copy, see [CLAUDE.md](CLAUDE.md) for the build steps,
+picker, or deploy your own copy, see [DEVELOPMENT.md](DEVELOPMENT.md) for the build steps,
 project layout, and the constraints that are easy to break.
 
 Quick start:
