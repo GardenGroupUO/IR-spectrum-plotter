@@ -12,24 +12,29 @@ def code(s, hidden=False):
 
 cells = [
 md("""
-# SPC → CSV → plot
+# IR spectrum plotter
 
-Turn a **GRAMS/AI `.spc`** spectrum into a CSV file and a plot. Everything happens inside
-your browser — nothing is uploaded anywhere, and there is nothing to install.
+Turn an IR spectrum, either a **GRAMS/AI `.spc`** file or a **Bruker OPUS** file, into a
+CSV file and a plot. This code runs in your browser and you don't need to install
+anything.
 
 ### What to do
 
-1. **Drag your `.spc` file onto the file list on the left.** Wait for it to appear.
-   (If the panel is hidden, click the folder icon in the top-left corner.)
+1. **Drag your spectrum file onto the file list on the left.** Wait for it to appear.
+   OPUS files are often named with a number instead of a file extension (e.g. `sample.0`,
+   `sample.17`). That's normal, so just drag it in as is. (If the panel is hidden, click
+   the folder icon in the top-left corner.)
 2. Run the cells below with `Shift` + `Enter`, and answer the questions in the boxes
    that appear. You can run them in any order, as many times as you like.
-3. Your CSV shows up in the same file list. **Right-click it → Download** to keep it.
+3. Your CSV shows up in the same file list. **Right-click it, then Download,** to keep it.
+4. The plot is also saved as a PNG image in the same file list. Right-click it, then
+   Download, to keep that too.
 """),
 
 md("""
-## Step 1 — Convert and plot
+## Step 1: Convert and plot
 
-Run this cell. If there is more than one `.spc` file, it will ask which one you want.
+Run this cell. If there is more than one spectrum file, it will ask which one you want.
 """),
 
 code("""# JupyterLite only fetches packages named in this cell, so list them here.
@@ -40,7 +45,7 @@ from spc_lab import convert
 convert()"""),
 
 md("""
-## Step 2 — Zoom in (optional)
+## Step 2: Zoom in (optional)
 
 Run this cell to look at part of the spectrum more closely. It will ask for the start and
 end of the range, in the units shown on the x axis. Press Enter without typing anything to
@@ -54,23 +59,22 @@ from spc_lab import zoom
 zoom()"""),
 
 md("""
-## Step 3 — Pick out the peaks (optional)
+## Step 3: Peak picking (optional)
 
 Run this cell to find the peaks and label the strongest ones. It asks two things:
 
-* **Sensitivity** — how prominent a bump has to be before it counts, as a percentage of
+* **Sensitivity:** how prominent a bump has to be before it counts, as a percentage of
   the spectrum's absorbance range. Smaller finds more. Start at 1 and adjust.
-* **How many to label** — only the strongest are drawn on the plot, so it stays readable.
+* **How many to label:** only the strongest are drawn on the plot, so it stays readable.
   The saved table always contains every peak found.
 
 **This works on whatever Step 2 is showing.** On the full spectrum it picks peaks across
-the whole range; after zooming, it picks peaks inside that range only, judging sensitivity
-against what is on screen. That is the easier way to pull out weak bands sitting near a
+the whole range. After zooming, it picks peaks inside that range only, judging sensitivity
+against what is on screen. This makes it easier to pull out a weak band sitting near a
 strong one. Run Step 2 and press Enter to go back to the whole spectrum.
 
 You get `..._peaks.csv` and `..._peaks.png`, named after the range so zoomed results do not
-overwrite the full ones. Deciding what each peak *means* is your job — the notebook only
-tells you where they are.
+overwrite the full ones.
 """),
 
 code("""import matplotlib, numpy, pandas  # noqa: F401
@@ -84,21 +88,28 @@ md("""
 
 ## If something goes wrong
 
-**"No .spc files found"** — the file has to be dropped onto the file list panel on the
+**"No spectrum files found":** the file has to be dropped onto the file list panel on the
 left, not into the notebook itself. Then run Step 1 again.
 
-**"This is an old-format SPC file"** — the file came from a pre-1996 version of GRAMS.
-Open it in GRAMS and re-save it, and it will read fine.
+**"This is an old-format SPC file":** only for `.spc` files. It came from a pre-1996
+version of GRAMS. Open it in GRAMS and re-save it, and it will read fine.
 
-**"Unrecognised SPC version byte"** — the file probably is not an SPC file, or it has been
-renamed. Check that it still opens in GRAMS.
+**"Unrecognised SPC version byte":** only for `.spc` files. The file probably is not an
+SPC file, or it has been renamed. Check that it still opens in GRAMS.
 
-**"It looks truncated"** — the copy is incomplete. Copy it off the instrument again.
+**"This is not an OPUS file":** only for files with a numeric extension (`.0`, `.17`,
+...). Its first bytes do not match the OPUS format. Check that it still opens in OPUS.
 
-**Peak picking finds far too many or too few** — change the sensitivity. Smaller numbers
+**"No spectrum was found in this OPUS file":** the file only holds instrument settings, or
+a kind of data block this reader does not handle.
+
+**"It looks truncated" / "ends inside ..." / "block directory is unreadable":** the copy
+is incomplete, for either file type. Copy it off the instrument again.
+
+**Peak picking finds far too many or too few:** change the sensitivity. Smaller numbers
 find more peaks. If everything is noise, the spectrum may need a better baseline first.
 
-**The plot looks like noise** — some instruments store interferograms rather than finished
+**The plot looks like noise:** some instruments store interferograms rather than finished
 spectra. Check the `y axis` line printed by Step 1.
 
 Your files live in this browser tab's private storage. Clearing your browsing data removes

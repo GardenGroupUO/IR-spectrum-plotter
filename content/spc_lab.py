@@ -127,18 +127,18 @@ def _plot(spec, title, xlim=None, png=None):
 
 
 def convert():
-    """Pick a .spc file, save it as CSV, and plot it."""
+    """Pick a spectrum file, save it as CSV, and plot it."""
     global spectrum, path, df, view
 
     files = find_spc()
     if not files:
-        print("No .spc files found.")
+        print("No spectrum files found.")
         print("Drag one onto the file list on the left, then run this cell again.")
         return
 
     if len(files) == 1:
         choice = files[0]
-        print(f"Using the only .spc file here: {choice.name}\n")
+        print(f"Using the only spectrum file here: {choice.name}\n")
     else:
         print("Which file would you like?")
         for i, f in enumerate(files, 1):
@@ -212,7 +212,7 @@ def zoom():
 # it transfers between strong and weak samples; PEAK_FLOOR is an absolute
 # backstop in absorbance units so a near-blank spectrum does not report noise.
 PEAK_SENSITIVITY = 1.0    # % of (max - min) absorbance
-PEAK_FLOOR = 0.005        # absorbance units
+PEAK_FLOOR = 0.003        # absorbance units
 PEAK_SMOOTH_CM = 16.0     # smoothing window, in x-axis units (not points)
 PEAK_NOISE_K = 4.0        # a peak must clear this many times the noise level
 PEAK_TOP_N = 10           # how many peaks get labelled on the plot
@@ -302,16 +302,32 @@ def _refine(x, y, i):
     return float(x[i]) + shift * step, y1 - 0.25 * (y0 - y2) * shift
 
 
-def find_peaks(x, y, min_prominence, smooth_cm=PEAK_SMOOTH_CM, min_separation_cm=None):
+def _noise_sigma(y):
+    """Point-to-point noise level, estimated from the raw data.
+
+    The median absolute difference is robust: real bands change smoothly
+    between neighbouring points, so they barely affect it, while noise does.
+    This assumes most of the array is baseline -- pass a whole spectrum's `y`,
+    not a narrow zoomed slice that is mostly a single peak's own rising and
+    falling edge, or the edge itself gets mistaken for noise.
+    """
+    diffs = np.diff(y)
+    return 1.4826 * float(np.median(np.abs(diffs - np.median(diffs)))) / np.sqrt(2.0)
+
+
+def find_peaks(x, y, min_prominence, smooth_cm=PEAK_SMOOTH_CM, min_separation_cm=None,
+               noise_sigma=None):
     """Return (positions, heights, prominences), strongest first.
 
     Peaks are detected on a smoothed copy so noise does not generate hundreds of
     hits, but positions and heights are read off the original data. Two further
     guards keep the result honest on real spectra:
 
-    * a noise-aware floor -- the noise level is estimated from the difference
-      between the raw and smoothed data, and nothing shallower than 3 sigma is
-      reported, however generous the sensitivity setting;
+    * a noise-aware floor -- nothing shallower than PEAK_NOISE_K times the noise
+      level is reported, however generous the sensitivity setting. ``noise_sigma``
+      should come from the whole spectrum (see _noise_sigma); when omitted it is
+      estimated from ``y`` itself, which is only reliable when ``y`` is not a
+      narrow zoomed slice;
     * a minimum separation -- when several candidates sit within one smoothing
       window of each other, only the most prominent survives, which stops a
       single noisy or flat-topped band being reported several times.
@@ -326,12 +342,9 @@ def find_peaks(x, y, min_prominence, smooth_cm=PEAK_SMOOTH_CM, min_separation_cm
     window = max(window, 7)
     smoothed = _savgol(y, window)
 
-    # Noise level, estimated from point-to-point scatter in the raw data. The
-    # median absolute difference is robust: real bands change smoothly between
-    # neighbouring points, so they barely affect it, while noise does.
-    diffs = np.diff(y)
-    sigma = 1.4826 * float(np.median(np.abs(diffs - np.median(diffs)))) / np.sqrt(2.0)
-    floor = max(float(min_prominence), PEAK_NOISE_K * sigma)
+    if noise_sigma is None:
+        noise_sigma = _noise_sigma(y)
+    floor = max(float(min_prominence), PEAK_NOISE_K * noise_sigma)
 
     idx = _local_maxima(smoothed)
     if len(idx) == 0:
@@ -375,13 +388,12 @@ def _plot_peaks(spec, x, y, pos, hgt, top_n, title, png):
 
     for k in range(shown):
         peak_x, peak_y = float(pos[k]), float(hgt[k])
-        ax.plot([peak_x], [peak_y], marker="v", markersize=5, color="tab:red")
         text = f"{peak_x:.0f}" if wavenumber else f"{peak_x:.4g}"
         # Alternate the offset so labels on neighbouring peaks do not collide.
         ax.annotate(
             text, (peak_x, peak_y), textcoords="offset points",
             xytext=(0, 9 + (k % 2) * 17), rotation=90,
-            ha="center", va="bottom", fontsize=8, color="tab:red",
+            ha="center", va="bottom", fontsize=8, color="black",
         )
 
     ax.set_ylim(top=float(y.max()) + 0.32 * span)
@@ -419,9 +431,15 @@ def peaks():
     if spectrum.n_traces > 1:
         print(f"This file has {spectrum.n_traces} traces; using the first one.")
 
-    # Follow the zoom. Thresholds are then worked out from the range on screen,
-    # which is the point: a weak band in a quiet region is easily missed when the
-    # sensitivity is judged against a huge peak somewhere else in the spectrum.
+    # Noise is always judged from the whole spectrum, never the zoomed slice: zoom
+    # in tight on a real line and its own edges look like huge noise; zoom into a
+    # flat gap and even a real noise level looks tiny. Either way the zoomed slice
+    # is a bad reference for itself, but the whole spectrum's scatter is stable.
+    noise = _noise_sigma(y)
+
+    # Follow the zoom for which peaks to report and how sensitivity is judged --
+    # a weak band in a quiet region is easily missed when the sensitivity is
+    # judged against a huge peak somewhere else in the spectrum.
     if view is None:
         suffix = ""
         where = "the whole spectrum"
@@ -455,11 +473,9 @@ def peaks():
 
     span = float(y.max() - y.min())
     floor = max(sensitivity / 100.0 * span, PEAK_FLOOR)
-    pos, hgt, prom = find_peaks(x, y, floor)
+    pos, hgt, prom = find_peaks(x, y, floor, noise_sigma=noise)
 
     # Tell the student when noise, rather than their setting, is the binding limit.
-    diffs = np.diff(y)
-    noise = 1.4826 * float(np.median(np.abs(diffs - np.median(diffs)))) / np.sqrt(2.0)
     if PEAK_NOISE_K * noise > floor:
         print(f"\nNote: this spectrum's noise level ({noise:.4g}) sets the limit here,")
         print(f"not your sensitivity. Nothing shallower than {PEAK_NOISE_K * noise:.4g} is")

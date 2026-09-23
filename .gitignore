@@ -2,3 +2,6 @@ dist/
 .venv/
 .jupyterlite.doit.db
 __pycache__/
+.DS_Store
+.claude/
+example_spectra/
