@@ -1,7 +1,8 @@
 # Project notes for Claude Code
 
-A JupyterLite site where chemistry students drag in a GRAMS/AI `.spc` file and get a CSV,
-a plot, and a peak list. Everything runs in the browser via Pyodide.
+A JupyterLite site where chemistry students drag in a GRAMS/AI `.spc` file or a Bruker
+OPUS file and get a CSV, a plot, and a peak list. Everything runs in the browser via
+Pyodide. Live site and student-facing usage instructions are in [README.md](README.md).
 
 ## Layout
 
@@ -45,6 +46,13 @@ Delete `.jupyterlite.doit.db` if a rebuild seems to ignore edits.
 8. **Output names keep an OPUS extension**, because `.17` identifies the measurement:
    `Benzoic_acid_14_23.17` → `Benzoic_acid_14_23.17.csv`. `.spc` files drop theirs. See
    `_stem()` / `_out()` in `spc_lab.py`.
+9. **`input()` needs `SharedArrayBuffer`, which needs cross-origin isolation.** The Pyodide
+   kernel implements blocking `input()` prompts through `SharedArrayBuffer`, and browsers
+   only expose that on pages served with `COOP`/`COEP` headers. GitHub Pages cannot send
+   those headers, so on the deployed site `input()` may silently fall back to the default
+   (see `ask()` in `spc_lab.py`) instead of prompting. Nothing breaks either way, but check
+   `zoom()` on the actual deployed link before relying on prompts working live. Netlify and
+   Cloudflare Pages can set those headers if interactive prompts turn out to matter.
 
 ## Formats
 
@@ -67,6 +75,11 @@ held the peak count at exactly the number of real bands from clean data up to 0.
 absorbance noise. Re-check it against real instrument files before changing it.
 
 Never add automatic functional-group assignment. Deliberate pedagogical choice.
+
+**Known limitation:** a saturated, flat-topped band can be reported as two peaks at its
+shoulders, an artifact of smoothing a clipped signal. The real band is always among the
+results, but the peak count may come out one higher than expected. Spectra that are not
+saturated are unaffected.
 
 ## Testing
 
