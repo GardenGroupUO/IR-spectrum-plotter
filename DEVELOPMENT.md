@@ -46,13 +46,15 @@ Delete `.jupyterlite.doit.db` if a rebuild seems to ignore edits.
 8. **Output names keep an OPUS extension**, because `.17` identifies the measurement:
    `Benzoic_acid_14_23.17` → `Benzoic_acid_14_23.17.csv`. `.spc` files drop theirs. See
    `_stem()` / `_out()` in `spc_lab.py`.
-9. **`input()` needs `SharedArrayBuffer`, which needs cross-origin isolation.** The Pyodide
-   kernel implements blocking `input()` prompts through `SharedArrayBuffer`, and browsers
-   only expose that on pages served with `COOP`/`COEP` headers. GitHub Pages cannot send
-   those headers, so on the deployed site `input()` may silently fall back to the default
-   (see `ask()` in `spc_lab.py`) instead of prompting. Nothing breaks either way, but check
-   `zoom()` on the actual deployed link before relying on prompts working live. Netlify and
-   Cloudflare Pages can set those headers if interactive prompts turn out to matter.
+9. **`input()` prompts were verified working on GitHub Pages** (jupyterlite-pyodide-kernel
+   0.8.6, tested via `zoom()` and `peaks()` on the live deployed site): typed values are
+   accepted and take effect, even though `window.crossOriginIsolated` is `false` there and
+   `SharedArrayBuffer` is unavailable (GitHub Pages cannot send the `COOP`/`COEP` headers
+   that would require). This kernel version's stdin does not need it. If you upgrade
+   `jupyterlite-pyodide-kernel`, re-check `zoom()` on the deployed link, since a future
+   version could reintroduce a `SharedArrayBuffer` dependency; `ask()` in `spc_lab.py`
+   silently falls back to the default and prints a notice if that ever happens, so nothing
+   breaks, but prompts would stop being interactive.
 
 ## Formats
 
