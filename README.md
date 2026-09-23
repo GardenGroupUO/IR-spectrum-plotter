@@ -3,7 +3,7 @@
 Turn an IR spectrum into a CSV file, a plot, and a peak list, right in your browser.
 No install, no account, nothing leaves your computer.
 
-**Use it here:** <https://gardengroupuo.github.io/IR-spectrum-plotter/notebooks/index.html?path=spc_to_csv.ipynb>
+**Use it here:** <https://gardengroupuo.github.io/IR-spectrum-plotter/lab/index.html?path=spc_to_csv.ipynb>
 
 ## How to use it
 
