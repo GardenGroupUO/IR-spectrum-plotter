@@ -10,7 +10,7 @@ No install, no account, nothing leaves your computer.
 1. Open the link above.
 2. Drag your spectrum file onto the file list on the left. Wait for it to appear.
    (If the panel is hidden, click the folder icon in the top-left corner.)
-3. Run each cell by clicking the green arrow next to it, and answer the questions in
+3. Run each cell by clicking the 🟢 green arrow next to it, and answer the questions in
    the boxes that appear. You can run the cells in any order, as many times as you like.
 4. Right-click any file it produces (CSV, PNG) in the file list and choose Download
    to save it to your computer.

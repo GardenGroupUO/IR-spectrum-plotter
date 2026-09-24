@@ -24,9 +24,10 @@ anything.
    OPUS files are often named with a number instead of a file extension (e.g. `sample.0`,
    `sample.17`). That's normal, so just drag it in as is. (If the panel is hidden, click
    the folder icon in the top-left corner.)
-2. Run each cell below by clicking the green arrow next to it, and answer the questions
-   in the boxes that appear. (`Shift` + `Enter` also works.) You can run the cells in any
-   order, as many times as you like.
+2. Run each cell below by clicking the <span style="color:#008000; font-weight:600;">green
+   arrow</span> next to it, and answer the questions in the boxes that appear.
+   (`Shift` + `Enter` also works.) You can run the cells in any order, as many times as
+   you like.
 3. Your CSV shows up in the same file list. **Right-click it, then Download,** to keep it.
 4. The plot is also saved as a PNG image in the same file list. Right-click it, then
    Download, to keep that too.
