@@ -7,7 +7,14 @@ Pyodide. Live site and student-facing usage instructions are in [README.md](READ
 ## Layout
 
 - `content/` — the only files students see: `spc_to_csv.ipynb`, `spc_lab.py`, `spc_reader.py`, `opus_reader.py`
-- `tools/build_notebook.py` — **the notebook is generated; edit this, not the .ipynb**
+- `tools/build_notebook.py` — **the notebook is generated; edit this, not the .ipynb.**
+  Editing it and committing directly on GitHub (no local build needed) is fine now:
+  `.github/workflows/deploy.yml` regenerates `content/spc_to_csv.ipynb` on every push and
+  commits the result back to `main` if it changed (as `github-actions[bot]`, message ends
+  `[skip ci]` so that commit doesn't re-trigger the workflow), before building and
+  deploying the site. Local edits should still run `tools/build_notebook.py` themselves
+  before committing, same as always, to keep the diff in that same commit rather than
+  a follow-up bot one.
 - `tools/make_test_spc.py` — writes synthetic `.spc` files in each supported variant
 - `static/custom.css` + `static/custom.js` + `tools/inject_custom_assets.py` — the green
   per-cell "Run" button in the `[ ]:` gutter. See constraint 10 below.

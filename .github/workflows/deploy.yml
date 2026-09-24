@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -27,6 +27,19 @@ jobs:
 
       - name: Install build tools
         run: pip install -r requirements.txt
+
+      - name: Regenerate the notebook from tools/build_notebook.py
+        run: python tools/build_notebook.py content/spc_to_csv.ipynb
+
+      - name: Commit the regenerated notebook if it changed
+        run: |
+          if ! git diff --quiet -- content/spc_to_csv.ipynb; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add content/spc_to_csv.ipynb
+            git commit -m "Regenerate notebook from tools/build_notebook.py [skip ci]"
+            git push
+          fi
 
       - name: Build the site
         run: jupyter lite build --contents content --output-dir dist
