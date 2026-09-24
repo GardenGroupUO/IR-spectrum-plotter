@@ -1,0 +1,12 @@
+/* Colour the per-cell "Run" button (added via lab/jupyter-lite.json's
+   cell-toolbar settingsOverrides) green, Colab-style. JupyterLab's settings
+   registry has no supported way to recolour a specific icon -- the theme
+   "CSS overrides" setting only covers fonts -- so this is injected directly
+   by tools/inject_custom_css.py after `jupyter lite build`. */
+.jp-cell-toolbar [data-jp-item-name="run-cell"] svg path {
+  fill: #2e7d32;
+}
+
+.jp-cell-toolbar [data-jp-item-name="run-cell"]:hover svg path {
+  fill: #1b5e20;
+}

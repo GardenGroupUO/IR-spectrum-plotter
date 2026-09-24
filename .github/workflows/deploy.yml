@@ -31,6 +31,9 @@ jobs:
       - name: Build the site
         run: jupyter lite build --contents content --output-dir dist
 
+      - name: Colour the per-cell Run button
+        run: python tools/inject_custom_css.py dist
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
