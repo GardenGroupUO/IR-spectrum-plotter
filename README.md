@@ -56,7 +56,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python tools/build_notebook.py content/spc_to_csv.ipynb
 jupyter lite build --contents content --output-dir dist
-python tools/inject_custom_css.py dist
+python tools/inject_custom_assets.py dist
 python -m http.server -d dist 8000     # must be http://, not file://
 ```
 

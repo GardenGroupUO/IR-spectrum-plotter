@@ -1,12 +1,44 @@
-/* Colour the per-cell "Run" button (added via lab/jupyter-lite.json's
-   cell-toolbar settingsOverrides) green, Colab-style. JupyterLab's settings
-   registry has no supported way to recolour a specific icon -- the theme
-   "CSS overrides" setting only covers fonts -- so this is injected directly
-   by tools/inject_custom_css.py after `jupyter lite build`. */
-.jp-cell-toolbar [data-jp-item-name="run-cell"] svg path {
-  fill: #2e7d32;
+/* A Colab-style green "Run" button in each code cell's left-hand prompt
+   column ([ ]:), always visible regardless of window width. Added by
+   static/custom.js. JupyterLab's own per-cell toolbar (top-right of the
+   active cell) hides itself when the cell isn't wide enough, which makes it
+   unsuitable for this: it can end up overlapping the cell's own code once
+   forced visible, so the button lives in the prompt gutter instead, which
+   never overlaps code and is never hidden.
+
+   Injected directly into the built HTML by tools/inject_custom_assets.py,
+   since neither of these is possible through JupyterLab's settings system:
+   there's no supported way to add a button outside the cell, and the one
+   "theme CSS override" setting that does exist only covers fonts. */
+.jp-InputArea-prompt {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-.jp-cell-toolbar [data-jp-item-name="run-cell"]:hover svg path {
-  fill: #1b5e20;
+.ir-run-button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #2e7d32;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.ir-run-button:hover {
+  background: rgba(46, 125, 50, 0.15);
+  color: #1b5e20;
+}
+
+.ir-run-button svg {
+  display: block;
+  width: 16px;
+  height: 16px;
 }
