@@ -43,3 +43,39 @@
   width: 44px;
   height: 44px;
 }
+
+/* Shown in place of the Run button while that cell's kernel call is in
+   flight -- a colourful ring (rather than JupyterLab's plain "[*]" text),
+   so it reads as active progress rather than looking stuck. */
+.ir-spinner {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.ir-spinner::before {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #008000, #1976d2, #f9a825, #d32f2f, #008000);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
+  animation: ir-spin 0.9s linear infinite;
+}
+
+@keyframes ir-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ir-spinner::before {
+    animation: none;
+  }
+}

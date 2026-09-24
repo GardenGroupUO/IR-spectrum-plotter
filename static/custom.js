@@ -1,13 +1,18 @@
 // Add a Colab-style "Run" button to every code cell's prompt gutter ([ ]:),
-// always visible regardless of window width. See custom.css for why this
-// lives here instead of in JupyterLab's built-in (and width-sensitive)
-// per-cell toolbar.
+// always visible regardless of window width, and swap it for a colourful
+// spinner while that cell is executing. See custom.css for why this lives
+// here instead of in JupyterLab's built-in (and width-sensitive) per-cell
+// toolbar.
 //
 // There's no extension API for this in a static JupyterLite build, so it
-// works directly against the DOM: a MutationObserver adds the button to any
-// code cell's prompt that doesn't have one yet (notebooks add/remove/reorder
-// cells constantly), and each click resolves its own cell's *current* index
-// at click time -- never a cached one -- via `window.jupyterapp`, which
+// works directly against the DOM. JupyterLab rewrites a prompt's entire
+// content on every state change ("[ ]:" -> "[*]:" -> "[1]:"), which wipes
+// out anything we've inserted into it -- so rather than attaching once and
+// tracking that with a marker attribute (which goes stale the moment
+// JupyterLab wipes the element but leaves the attribute), `sync()` re-checks
+// and re-inserts the right element on every mutation, keyed off the prompt's
+// own current text. Each click resolves its own cell's *current* index at
+// click time -- never a cached one -- via `window.jupyterapp`, which
 // JupyterLite exposes globally because jupyter-lite.json sets
 // "exposeAppInBrowser": true.
 (function () {
@@ -48,30 +53,57 @@
     window.jupyterapp.commands.execute('notebook:run-cell-and-select-next');
   }
 
-  function attachButtons() {
-    const prompts = document.querySelectorAll(
-      '.jp-CodeCell .jp-InputArea-prompt:not([data-ir-run-attached])',
-    );
-    prompts.forEach((prompt) => {
-      prompt.setAttribute('data-ir-run-attached', '1');
-      const btn = document.createElement('button');
-      btn.className = 'ir-run-button';
-      btn.type = 'button';
-      btn.title = 'Run this cell';
-      btn.setAttribute('aria-label', 'Run this cell');
-      btn.innerHTML = RUN_ICON;
-      btn.addEventListener('click', (evt) => {
-        evt.preventDefault();
-        evt.stopPropagation();
-        runCell(prompt);
-      });
-      prompt.prepend(btn);
+  function makeButton(prompt) {
+    const btn = document.createElement('button');
+    btn.className = 'ir-run-button';
+    btn.type = 'button';
+    btn.title = 'Run this cell';
+    btn.setAttribute('aria-label', 'Run this cell');
+    btn.innerHTML = RUN_ICON;
+    btn.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      runCell(prompt);
     });
+    return btn;
   }
 
-  attachButtons();
-  new MutationObserver(attachButtons).observe(document.body, {
+  function makeSpinner() {
+    const span = document.createElement('span');
+    span.className = 'ir-spinner';
+    span.title = 'Running…';
+    span.setAttribute('aria-label', 'Running');
+    return span;
+  }
+
+  // The prompt's own text is always exactly "[ ]:", "[*]:", or "[N]:" for a
+  // code cell -- "*" only ever appears there while the kernel is busy on it.
+  function isBusy(prompt) {
+    return (prompt.textContent || '').indexOf('*') !== -1;
+  }
+
+  function sync(prompt) {
+    const busy = isBusy(prompt);
+    const btn = prompt.querySelector('.ir-run-button');
+    const spinner = prompt.querySelector('.ir-spinner');
+
+    if (busy) {
+      if (btn) btn.remove();
+      if (!spinner) prompt.prepend(makeSpinner());
+    } else {
+      if (spinner) spinner.remove();
+      if (!btn) prompt.prepend(makeButton(prompt));
+    }
+  }
+
+  function syncAll() {
+    document.querySelectorAll('.jp-CodeCell .jp-InputArea-prompt').forEach(sync);
+  }
+
+  syncAll();
+  new MutationObserver(syncAll).observe(document.body, {
     childList: true,
     subtree: true,
+    characterData: true,
   });
 })();
