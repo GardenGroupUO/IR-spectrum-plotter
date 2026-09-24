@@ -18,13 +18,13 @@
 }
 
 .ir-run-button {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
-  border-radius: 3px;
+  border-radius: 4px;
   background: transparent;
-  color: #2e7d32;
+  color: #1b5e20;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -33,12 +33,12 @@
 }
 
 .ir-run-button:hover {
-  background: rgba(46, 125, 50, 0.15);
-  color: #1b5e20;
+  background: rgba(27, 94, 32, 0.15);
+  color: #0d3f11;
 }
 
 .ir-run-button svg {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
 }
