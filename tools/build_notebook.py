@@ -29,7 +29,7 @@ anything.
    (`Shift` + `Enter` also works.) You can run the cells in any order, as many times as
    you like.
 3. Your CSV shows up in the same file list. **Right-click it, then Download,** to keep it.
-4. The plot is also saved as a PNG image in the same file list. Right-click it, then
+4. The plot is also saved as a PNG image in the same file list. Right-click it, then 
    Download, to keep that too.
 """),
 
